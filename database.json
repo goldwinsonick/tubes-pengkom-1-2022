@@ -1,1 +1,41 @@
-{}
+{
+    "Toko Ganja": {
+        "password": "1234",
+        "barang": {
+            "Ganja": {
+                "harga": 100000,
+                "stock": 10
+            },
+            "Sabu-sabu": {
+                "harga": 200000,
+                "stock": 20
+            }
+        }
+    },
+    "Toko Gaming": {
+        "password": "5678",
+        "barang": {
+            "Mouse": {
+                "harga": 60000,
+                "stock": 5
+            },
+            "Keyboard": {
+                "harga": 150000,
+                "stock": 2
+            },
+            "Speaker": {
+                "harga": 100000,
+                "stock": 3
+            }
+        }
+    },
+    "Toko Senjata": {
+        "password": "0000",
+        "barang": {
+            "Ak47": {
+                "harga": 5000,
+                "stock": 100
+            }
+        }
+    }
+}
