@@ -1,32 +1,37 @@
 import os
 import json
 
-def getJSONdata(filename):
-    f = open(filename)
-    data = json.load(f)
-    f.close()
-    return data
-def postJSONdata(filename, database):
-    with open(filename, "w") as file:
-        json.dump(database, file, indent=4, separators=(',', ': ')) 
-
 class Database():
-    def __init__(self, data):
-        self.data = data
-    # Penjual
+    # CONSTRUCTOR
+    def __init__(self, filename):
+        self.filename = filename
+        self.data = self.getJSONdata(self.filename)
+
+    # EDIT DATABASE
     def addToko(self, toko, password):
         self.data[toko] = {}
         self.data[toko]["password"] = password
         self.data[toko]["barang"] = {}
+        self.postJSONdata(self.filename, self.data)
     def addBarang(self, toko, barang, stock, harga):
         self.data[toko]["barang"][barang] = {"harga":harga, "stock":stock}
+        self.postJSONdata(self.filename, self.data)
     def editStockBarang(self, toko, barang, stock):
         self.data[toko]["barang"][barang]["stock"] = stock
+        self.postJSONdata(self.filename, self.data)
     def editHargaBarang(self, toko, barang, harga):
         self.data[toko]["barang"][barang]["harga"] = harga
+        self.postJSONdata(self.filename, self.data)
+    def removeToko(self, toko):
+        del self.data[toko]
+        self.postJSONdata(self.filename, self.data)
+    def removeBarang(self, toko, barang):
+        del self.data[toko]["barang"][barang]
+        self.postJSONdata(self.filename, self.data)
+    
+    # GET INFO
     def getTokoPass(self, toko):
         return self.data[toko]["password"]
-    # Pembeli
     def getListToko(self):
         return list(self.data.keys())
     def getListBarang(self,toko):
@@ -35,13 +40,16 @@ class Database():
         return self.data[toko]["barang"][barang]["harga"]
     def getStockBarang(self, toko, barang):
         return self.data[toko]["barang"][barang]["stock"]
-    def printKatalog(self, toko):
-        tokos = self.getListToko()
-        for toko in tokos:
-            print(toko)
-            barangs = self.getListBarang(toko)
-            for barang in barangs:
-                print(f">> {barang}")
+
+    # SYNC JSONFILE
+    def getJSONdata(self, filename):
+        f = open(filename)
+        data = json.load(f)
+        f.close()
+        return data
+    def postJSONdata(self, filename, database):
+        with open(filename, "w") as file:
+            json.dump(database, file, indent=4, separators=(',', ': '), sort_keys=True) 
 
 class Item():
     def __init__(self, nama, toko, harga, jumlah):
@@ -65,17 +73,3 @@ class Keranjang():
             print(self.cart[i].toko)
             print(self.cart[i].harga)
             print(self.cart[i].jumlah)
-
-
-database = Database(getJSONdata(os.path.dirname(__file__)+"\\database.json"))
-database.addToko("Toko Ganja", "1234")
-database.addBarang("Toko Ganja", "Ganja", 10, 100000)
-database.addBarang("Toko Ganja", "Sabu-sabu", 20, 200000)
-database.addToko("Toko Gaming", "5678")
-database.addBarang("Toko Gaming", "Mouse", 5, 60000)
-database.addBarang("Toko Gaming", "Keyboard", 2, 150000)
-database.addBarang("Toko Gaming", "Speaker", 3, 100000)
-database.addToko("Toko Senjata", "0000")
-database.addBarang("Toko Senjata", "Ak47", 100, 5000)
-postJSONdata(os.path.dirname(__file__)+"\\database.json", database.data)
-# cart.addToCart("Toko Ganja", "Ganja", 100)

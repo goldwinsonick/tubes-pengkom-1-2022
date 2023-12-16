@@ -1,41 +1,44 @@
 {
-    "Toko Ganja": {
-        "password": "1234",
+    "Gromedia": {
         "barang": {
-            "Ganja": {
-                "harga": 100000,
+            "Penggaris": {
+                "harga": 10000,
                 "stock": 10
             },
-            "Sabu-sabu": {
-                "harga": 200000,
-                "stock": 20
-            }
-        }
-    },
-    "Toko Gaming": {
-        "password": "5678",
-        "barang": {
-            "Mouse": {
-                "harga": 60000,
-                "stock": 5
+            "Penghapus": {
+                "harga": 1000,
+                "stock": 300
             },
-            "Keyboard": {
-                "harga": 150000,
-                "stock": 2
+            "Pensil": {
+                "harga": 3000,
+                "stock": 80
             },
-            "Speaker": {
-                "harga": 100000,
-                "stock": 3
+            "Pulpen": {
+                "harga": 4000,
+                "stock": 190
             }
-        }
+        },
+        "password": "12345678"
     },
-    "Toko Senjata": {
-        "password": "0000",
+    "Indimaret": {
         "barang": {
-            "Ak47": {
-                "harga": 5000,
-                "stock": 100
+            "Pasta Gigi": {
+                "harga": 15000,
+                "stock": 22
+            },
+            "Sabun": {
+                "harga": 10000,
+                "stock": 15
+            },
+            "Shampoo": {
+                "harga": 11000,
+                "stock": 35
+            },
+            "Sikat Gigi": {
+                "harga": 20000,
+                "stock": 28
             }
-        }
+        },
+        "password": "11111111"
     }
 }

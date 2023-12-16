@@ -3,10 +3,13 @@ import msvcrt
 import ecommerce as ec
 from datetime import date
 
-db = ec.Database(ec.getJSONdata(os.path.dirname(__file__)+"\\database.json"))
+# DEKLARASI DATABASE DAN KERANJANG
+db = ec.Database(os.path.dirname(__file__)+"\\database.json")
 cr = ec.Keranjang([])
 
-def printOpsi(text, opsi, *args, **kwargs):
+# try:
+# PRINT UI DENGAN SELECTOR
+def printOpsi(text, opsi, **kwargs):
     cursor = 0
     while(True):
         os.system("cls")
@@ -28,14 +31,15 @@ def printOpsi(text, opsi, *args, **kwargs):
         return cursor
     return opsi[cursor]
 
+# SISTEM KERANJANG
 def beliBarang(toko, barang):
     os.system("cls")
     harga = db.getHargaBarang(toko, barang)
     stock = db.getStockBarang(toko, barang)
     print(f"Stock Tersedia: {stock}")
     jumlah = int(input("Jumlah Barang yang Dibeli: "))
-    if(jumlah > stock):
-        x = printOpsi("Jumlah melebihi stock.", ["Coba Lagi", "Kembali"])
+    if(jumlah<0 or jumlah > stock):
+        x = printOpsi("Jumlah melebihi stock atau kurang dari 0.", ["Coba Lagi", "Kembali"])
         if(x == "Coba Lagi"):
             beliBarang(toko, barang)
         elif (x == "Kembali"):
@@ -61,12 +65,11 @@ def pilihBarang(toko):
     else:
         harga = db.getHargaBarang(toko, barang)
         stock = db.getStockBarang(toko, barang)
-        x = printOpsi(f"{barang}:\nHarga:{harga}\nStock:{barang}", ["Beli", "Kembali"])
+        x = printOpsi(f"{barang}:\nHarga:{harga}\nStock:{stock}", ["Beli", "Kembali"])
         if(x == "Beli"):
             beliBarang(toko, barang)
         elif(x == "Kembali"):
             pilihBarang(toko)
-
 def editJumlah(idx):
     os.system("cls")
     item = cr.cart[idx]
@@ -82,7 +85,6 @@ def editJumlah(idx):
             editJumlah(idx)
         else:
             lihatKeranjang()
-
 def editBarangKeranjang(idx):
     x = printOpsi(f"{cr.cart[idx].nama}", ["Edit Jumlah", "Hapus Barang", "Kembali"])
     if(x == "Edit Jumlah"):
@@ -102,6 +104,7 @@ def lihatKeranjang():
     else:
         editBarangKeranjang(x-1)
 
+# SISTEM CHECKOUT PEMBELI
 def printInvoice(krnjng, alamat):
     os.system("cls")
     now = date.today()
@@ -113,9 +116,15 @@ def printInvoice(krnjng, alamat):
     invoice += f"Alamat Pembelian: {alamat}\n"
     invoice += krnjng
     
-    with open(f"{os.path.dirname(__file__)}\\invoices\\{now.strftime('%d%m%Y%H%M%S')}.txt", 'w') as f:
-        f.write(invoice)
-    
+    path = f"{os.path.dirname(__file__)}\\invoices" # Get path buat output invoice
+    if not os.path.exists(path): # Cek apakah folder invoices ada
+        os.makedirs(path)        # Kalo gk ada, buat baru
+    with open(f"{path}\\{now.strftime('%d%m%Y%H%M%S')}.txt", 'w') as f: # Buat invoice
+        f.write(invoice) # Buat invoice dengan isi string invoice
+def updateStock():
+    for item in cr.cart:
+        stockbaru = db.getStockBarang(item.toko, item.nama) - item.jumlah
+        db.editStockBarang(item.toko, item.nama, stockbaru)
 def checkout():
     title = "Keranjang:\n"
     totalHarga = 0
@@ -129,9 +138,12 @@ def checkout():
         os.system("cls")
         alamat = input("Alamat pengiriman (Gratis Ongkir): ")
         printInvoice(title, alamat)
+        updateStock()
+        homepage()
     else:
         homepagePembeli()
 
+# HOMEPAGE PEMBELI
 def homepagePembeli():
     menu = printOpsi("Selamat Datang!", ["List Toko", "Keranjang", "Checkout", "Kembali"])
     if menu == "List Toko":
@@ -143,20 +155,23 @@ def homepagePembeli():
     elif menu == "Kembali":
         homepage()
 
+# SISTEM PAGE PENJUAL
 def editKatalog(toko):
     os.system("cls")
     barangs = db.getListBarang(toko)
     barang = printOpsi(f"List Barang", barangs)
-    x = printOpsi(f"{barang}:\nHarga:{db.getHargaBarang(toko,barang)}\nStock:{db.getStockBarang(toko, barang)}", ["Edit Harga", "Edit Stock", "Kembali"])
+    x = printOpsi(f"{barang}:\nHarga:{db.getHargaBarang(toko,barang)}\nStock:{db.getStockBarang(toko, barang)}", ["Edit Harga", "Edit Stock", "Remove Barang", "Kembali"])
     os.system("cls")
     if x == "Edit Harga":
         print(f"Harga sekarang: {db.getHargaBarang(toko, barang)}")
-        newHarga = input("Harga Baru: ")
+        newHarga = int(input("Harga Baru: "))
         db.editHargaBarang(toko, barang, newHarga)
     elif x == "Edit Stock":
         print(f"Stock sekarang: {db.getStockBarang(toko, barang)}")
-        newStock = input("Stock Baru: ")
+        newStock = int(input("Stock Baru: "))
         db.editStockBarang(toko, barang, newStock)
+    elif x == "Remove Barang":
+        db.removeBarang(toko, barang)
     homepagePenjual(toko)
 def tambahBarang(toko):
     os.system("cls")
@@ -174,25 +189,30 @@ def tambahBarang(toko):
         elif(x == "Kembali"):
             homepagePenjual(toko)
     else:
-        newHarga = input("Harga Barang: ")
-        newStock = input("Stock Barang: ")
+        newHarga = int(input("Harga Barang: "))
+        newStock = int(input("Stock Barang: "))
         db.addBarang(toko, newBarang, newStock, newHarga)
         homepagePenjual(toko)
-
 def homepagePenjual(toko):
-    x = printOpsi(f"Selamat datang {toko}", ["Edit Katalog", "Tambah Barang", "Log Out"])
+    x = printOpsi(f"Selamat datang {toko}", ["Edit Katalog", "Tambah Barang", "Remove Toko", "Log Out"])
     if x == "Edit Katalog":
         editKatalog(toko)
     elif x == "Tambah Barang":
         tambahBarang(toko)
     elif x == "Log Out":
         homepage()
+    elif x == "Remove Toko":
+        db.removeToko(toko)
+        homepage()
 
+# SISTEM LOGIN DAN SINGUP AKUN PENJUAL
 def signIn():
     toko = input("Nama Toko: ")
     password = input("Password Toko: ")
     db.addToko(toko, password)
+    LoginPage()
 def logIn():
+    os.system("cls")
     toko = input("Nama Toko: ")
     password = input("Password Toko: ")
     if (toko in db.getListToko() and password == db.getTokoPass(toko)):
@@ -203,7 +223,6 @@ def logIn():
             logIn()
         elif(x == "Tidak"):
             LoginPage()
-
 def LoginPage():
     x = printOpsi("Pilih:", ["Sign In", "Log In", "Kembali"])
     if x == "Sign In":
@@ -213,6 +232,7 @@ def LoginPage():
     elif x == "Kembali":
         homepage()
 
+# HOMEPAGE
 def homepage():
     x = printOpsi("Selamat Datang!", ["Penjual", "Pembeli", "Exit"])
     if x == "Penjual":
@@ -220,3 +240,5 @@ def homepage():
     elif x == "Pembeli":
         homepagePembeli()
 homepage()
+# except:
+#     homepage()
